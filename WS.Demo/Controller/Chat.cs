@@ -33,14 +33,14 @@ namespace WS.Demo.Controller
 
         protected override void OnClose(CloseEventArgs e)
         {
-            string message = string.Format("{0} 離開對話...", _name);
+            var message = $"{_name} 離開對話...";
             Console.WriteLine(message);
             Sessions.Broadcast(message);
         }
 
         protected override void OnMessage(MessageEventArgs e)
         {
-            string message = string.Format("{0}: {1}", _name, e.Data);
+            var message = $"{_name}: {e.Data} - {DateTime.Now:yyyy-MM-dd HH:mm:ss}";
             Console.WriteLine(message);
             Sessions.Broadcast(message);
         }
@@ -48,7 +48,7 @@ namespace WS.Demo.Controller
         protected override void OnOpen()
         {
             _name = GetName();
-            string message = string.Format("{0} 加入對話...", _name);
+            var message = $"{_name} 加入對話...";
             Console.WriteLine(message);
             Sessions.Broadcast(message);
         }

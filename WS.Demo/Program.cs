@@ -12,7 +12,11 @@ namespace WS.Demo
             var wssv = new WebSocketServer(55688);
 
             wssv.AddWebSocketService<Chat>("/Chat");
-            wssv.AddWebSocketService<Echo>("/Echo");
+
+            for (int i = 0; i < 1000; i++)
+            {
+                wssv.AddWebSocketService<Echo>($"/Echo-{i}");
+            }
             
             wssv.Start();
             if (wssv.IsListening)
