@@ -1,0 +1,96 @@
+<html lang="zh-Hant-TW">
+<head>
+    <title></title>
+<!--    <script src="./vue.js"></script>-->
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.0/vue.min.js' integrity='sha512-ZjkdNWvVA3C4ZhiL2HoYnUVHB0cLCJwQl/YU5IXgmVSGSsLhpBg5rAIiltBeEpjjNcmxb2F4nePSh1O91J0FCg==' crossorigin='anonymous'></script>
+</head>
+<body>
+<div id="app">
+    <h3>Chat</h3>
+    <div>
+        <input type="checkbox" id="chat1" value="art" v-model="checkedNames" v-on:change="joinChat">
+        <label for="chat1">art</label>
+        <input type="checkbox" id="chat2" value="mars" v-model="checkedNames" v-on:change="joinChat">
+        <label for="chat2">mars</label>
+        <input type="checkbox" id="chat3" value="cathy" v-model="checkedNames" v-on:change="joinChat">
+        <label for="chat3">cathy</label>
+    </div>
+
+    <h3>Chat</h3>
+    <p>
+        Status : {{ chatStatus }}<br/>
+        Revice count : {{ chatCount }}<br/>
+        Revice Msg : <br/>
+        {{ chatMessage }}
+    </p>
+
+
+</div>
+
+<script>
+    new Vue({
+        el: '#app',
+        data: {
+            WS_Uri: 'ws://localhost:55688/',
+            checkedNames: [],
+            channels: {},
+            
+            chatStatus: null,
+            chatCount:0,
+            chatMessage:null
+
+        },
+        methods: {
+            joinChat(evt) {
+                const username = evt.target.value
+
+                if (!this.checkedNames.includes(username)) {
+                    // 頻道存在，則移除
+                    if (this.channels[username]) {
+                        this.channels[username].close()
+                        this.channels[username] = null
+                        this.chatStatus = 'Disconnected'
+                        this.chatMessage = `${username} 離開對話`
+                    }
+                } else {
+                    // 頻道不存在，則建立
+                    if (!this.channels[username]) {
+                        let url = `${this.WS_Uri}Chat?name=${username}`
+                        console.log(`connect to ${url}`)
+
+                        let websocket = new WebSocket(url);
+                        websocket.binaryType = 'arraybuffer'
+
+                        //會話建立後事件
+                        websocket.onopen = (evt) => {
+                            this.chatStatus = 'Connected'
+
+                            if (!this.chatCount) this.chatCount = 0
+
+                        };
+                        //會話結束後事件
+                        websocket.onclose = (evt) => {
+                            this.chatStatus = 'Disconnected'
+                        };
+                        //接收到訊息後事件
+                        websocket.onmessage = (evt) => {
+                            this.chatCount = this.chatCount + 1
+                            this.chatMessage = evt.data
+                        };
+                        //發生錯誤後事件
+                        websocket.onerror = (evt) => {
+                            this.chatStatus = evt.data
+                        };
+
+                        this.channels[username] = websocket
+                    }
+                }
+
+
+            },
+        }
+
+    })
+</script>
+</body>
+</html>
